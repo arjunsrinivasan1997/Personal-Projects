@@ -1,0 +1,6 @@
+Notes:
+-Question 4: Where do we get the num_rolls = -1 from?, Completed
+
+
+
+

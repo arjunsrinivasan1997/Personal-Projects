@@ -5,43 +5,31 @@ public class NBody {
     double radius = file.readDouble();
     return radius;
   }
-  public static Planet[] readPlanets(String filename) {
+  public static Planet[] readPlanetsAndSpaceShip(String filename) {
     In file = new In(filename);
     int planet_number = file.readInt();
     double advance = file.readDouble();
     //Above lines advances file reader past radius of galaxy
     Planet[] planets = new Planet[planet_number];
-    for (int i = 0; i < planet_number; i++) {
+    planets[0]=new Spaceship(file.readDouble(), file.readDouble(), file.readDouble(),
+                file.readDouble(), file.readDouble(), file.readString());
+    for (int i = 1; i < planet_number; i++) {
       planets[i] = new Planet(file.readDouble(), file.readDouble(), file.readDouble(),
                   file.readDouble(), file.readDouble(), file.readString());
     }
     return planets;
-  }
-  public static Spaceship readSpaceship(String filename) {
-      In file = new In(filename);
-      int planet_number = file.readInt();
-      double advance = file.readDouble();
-      Spaceship spaceship;
-      //Above lines advances file reader past radius of galaxy
-      spaceship = new Spaceship(file.readDouble(), file.readDouble(), file.readDouble(),
-                                file.readDouble(), file.readDouble(), file.readString());
-      return spaceship;
-  }
+}
   public static void main(String[] args) {
     double T = Double.parseDouble(args[0]);
     double dt = Double.parseDouble(args[1]);
     String filename = args[2];
-    boolean isSpaceship = Boolean.parseBoolean(args[3]);
+
     double radius = readRadius(filename);
-    if (isSpaceship) {
-        Spaceship spaceship = readSpaceship(filename);
-    }
-    Planet[] planets = readPlanets(filename);
+    Planet[] planets = readPlanetsAndSpaceShip(filename);
     StdDraw.setScale(-radius, radius);
     StdDraw.picture(0,0,"./images/starfield.jpg");
     for (Planet p : planets) {
       p.draw();
-    spaceship.draw():
     }
     for (double time = 0; time <= T; time += dt) {
         double[] xForces = new double[planets.length];
