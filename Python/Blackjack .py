@@ -5,7 +5,6 @@ def blackjack():
         print("The computer will act as the dealer")
         m=1000000
         starting_amount=m
-
         print("You will be given $%s to start with"%("{:,}".format(m)))
         player_value=0
         player_value1=0
@@ -70,7 +69,6 @@ def blackjack():
                         player_value1=11
                         total=total+player_value
                         total1=total1+player_value1
-
                     else:
                         player_value=int(list_of_cards[b])
                         if total1>0:
@@ -246,7 +244,6 @@ def blackjack():
                                 print("The computer won")
                                 m=m-w
                                 computer_wins=computer_wins+1
-
                             if ctotal==value_to_beat or ctotal1==value_to_beat:
                                 print("The game was a draw")
                                 m=m
