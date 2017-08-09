@@ -1,6 +1,7 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import csv
+
 class Analyzer():
     mainLink = 'http://mha1.nic.in/ipr/ips_ersheet_new/home.aspx'
 
@@ -10,10 +11,9 @@ class Analyzer():
         self.links = []
         self.values = {}
         self.officers=[]
-
     def analyze(self):
         self.driver = webdriver.Chrome(executable_path=r'Driver/chromedriver')
-        self.driver.get("http://mha1.nic.in/ipr/ips_ersheet_new/home.aspx")
+        self.driver.get(self.mainLink)
         element = self.driver.find_element_by_id('form1')
         self.all_options = element.find_elements_by_tag_name("option")
         for option in self.all_options:
@@ -68,8 +68,7 @@ class Analyzer():
 
 
 class EducationRow():
-    def __init__(self, qualification, discipline, spec1, spec2, year, division,
-                 institution, university, place):
+    def __init__(self, qualification, discipline, spec1, spec2, year, division,institution, university, place):
         self.qualification = qualification
         self.discipline = discipline
         if spec1 == "-":
@@ -87,8 +86,8 @@ class EducationRow():
         self.place = place
 
     def prepCSV(self):
-        info =[]
-        x = 2
+        'TODO Fill this out'
+
 
 
 class Officer():
@@ -103,7 +102,7 @@ class Officer():
         else :
             self.gender =''
             self.name=name
-            print name + " Does not have a gender"
+            print(name + " Does not have a identifiable gender")
         self.dob = dob
         self.cadre = cadre
         self.batch = batch
@@ -121,5 +120,5 @@ class Officer():
 
 
 
-test = Analyzer(1988, 'HY')
-test.analyze()
+Analyzer(1988, 'HY').analyze()
+
