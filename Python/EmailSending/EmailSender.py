@@ -3,67 +3,104 @@ import sys
 from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from openpyxl import load_workbook
 from string import Template
 
-numberOfEmailsToBeSent = 3
-startRow = 2
+from openpyxl import load_workbook
+
+'Basic info. Change this to change how program runs'
+numberOfEmailsToBeSent = 1
+startRow = 10
+senderAddress = ""
+senderPassword = ""
+senderName = ""
+
+'Check to see if command line arguments were given'
 if len(sys.argv) >= 2:
     try:
-        numberOfEmailsToBeSent =int(sys.argv[1])
+        numberOfEmailsToBeSent = int(sys.argv[1])
     except ValueError:
-        raise ValueError("ERROR: Number of Emails to be sent must be an integer")
+        raise ValueError("Number of Emails to be sent must be an integer")
 if len(sys.argv) == 3:
     try:
         startRow = int(sys.argv[2])
     except ValueError:
-        raise ValueError("ERROR: Start Row must be an integer")
+        raise ValueError("Start Row must be an integer")
+
+'Function to read in file and create a template object from that file'
+
+
 def read_template(filename):
     with open(filename, 'r', encoding='utf-8') as template_file:
         template_file_content = template_file.read()
     return Template(template_file_content)
+
+
+"""Removes the unnecessary space at the end of the message, and removes the unnecessary 
+   period at the end of a string"""
+
+
+def clean_string(message):
+    if message[0] == " ":
+        return clean_string(message[1:len(message)])
+    if message[len(message) - 1] == " ":
+        return clean_string(message[0:len(message) - 1])
+    if "." == message[len(message) - 1]:
+        return clean_string(message[0:len(message) - 1])
+    return message
+
+
 'Setting Up Email Server'
-senderAddress = "bucsrocknfl@gmail.com"
-senderPassword = "Bucs#2002"
-' Use smtp-relay.gmail.com if you have a GSuite Email and smtp.gmail.com otherwise '
+
 s = smtplib.SMTP(host='smtp.gmail.com', port=587)
 s.starttls()
 s.login(senderAddress, senderPassword)
-'Setting Up Excel Sheet'
 
+'Setting Up Excel Sheet'
 wb = load_workbook('Outreach Track Sheet.xlsx')
 ws = wb["Master List USA"]
 currRow = startRow
 template = read_template('template.txt')
+"""Looping through each row specified by startRow and numberOfEmailsToBeSent, gathering a name, email, media type and 
+   personal message, adding those values to the template, and sending the email"""
 for i in range(numberOfEmailsToBeSent):
     msg = MIMEMultipart()
-    name = ws.cell(row=currRow,column=1).value
-    email = ws.cell(row=currRow,column=2).value
-    mediaType = ws.cell(row=currRow,column=4).value
-    personalMessage = ws.cell(row=currRow,column=5).value
-    if name == None:
-        raise ValueError("ERROR: Name (row " + str(currRow) +",column 1) cannot be empty")
-    if email == None:
-        raise ValueError("ERROR: Email (row " + str(currRow) + ",column 2) cannot be empty")
-    if mediaType == None:
-        raise ValueError("ERROR: MediaType (row " + str(currRow) + ",column 4) cannot be empty")
-    if personalMessage == None:
-        raise ValueError("ERROR: Email (row " + str(currRow) + ",column 5) cannot be empty")
-    body = template.substitute(PERSON_NAME=name,TYPE_OF_MEDIA=mediaType,Personal_Message=personalMessage)
-    msg['From'] = senderAddress
-    msg['To'] = email
-    msg['Subject'] = "Cuddle Cub"
-    msg.attach(MIMEText(body, 'plain'))
+    try:
+        name = clean_string(ws.cell(row=currRow, column=1).value)
+        email = clean_string(ws.cell(row=currRow, column=2).value)
+        mediaType = clean_string(ws.cell(row=currRow, column=4).value)
+        personalMessage = clean_string(ws.cell(row=currRow, column=5).value)
+        sendEmail = True
+    except TypeError:
+        sendEmail = False
 
-    s.send_message(msg)
-    ws.cell(row=currRow,column=6).value="Angela"
-    ws.cell(row=currRow,column=7).value = date.today()
+    if name is None:
+        sendEmail = False
+    if email is None:
+        sendEmail = False
+    if mediaType is None:
+        sendEmail = False
+    if personalMessage is None:
+        sendEmail = False
+    if sendEmail:
+        body = template.substitute(PERSON_NAME=name, TYPE_OF_MEDIA=mediaType, Personal_Message=personalMessage,
+                                   Sender_Name=senderName)
+        msg['From'] = senderAddress
+        msg['To'] = email
+        msg['Subject'] = "Cuddle Cub"
+        msg.attach(MIMEText(body, 'plain'))
 
-    del msg
+        s.send_message(msg)
+        print("Sent email to " + str(name) + " at " + str(email))
+        ws.cell(row=currRow, column=6).value = senderName
+
+        dateCell = ws.cell(row=currRow, column=7)
+        dateCell.value = date.today()
+        dateCell.number_format = "MM/DD/YYYY"
+
+        del msg
+    else:
+        print("ERROR: Could not send email to " + str(name) + " at " + str(email) +
+              ". Check row " + str(currRow) + " and ensure none of the first four columns are blank")
     currRow += 1
-
-
-
-
-
-
+wb.save('Outreach Track Sheet.xlsx')
+print("Finished sending emails")

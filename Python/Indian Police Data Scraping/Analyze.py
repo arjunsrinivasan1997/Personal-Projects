@@ -2,7 +2,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 
 
-class Analyzer():
+class Analyzer:
+    """Class that analyzes links"""
     mainLink = 'http://mha1.nic.in/ipr/ips_ersheet_new/home.aspx'
 
     def __init__(self, year, cadre):
@@ -11,16 +12,17 @@ class Analyzer():
         self.links = []
         self.values = {}
         self.officers = []
+        self.driver = webdriver.Chrome(executable_path='Driver/chromedriver')
+        self.driver.get(self.mainLink)
+        element = self.driver.find_element_by_id('form1')
+        self.all_options = element.find_elements_by_tag_name("option")
+        for option in self.all_options:
+            self.values[option.get_attribute("value")] = option
 
     def analyze(self):
         for year in self.year:
             for cadre in self.cadre:
-                self.driver = webdriver.Chrome(executable_path='Driver/chromedriver')
-                self.driver.get(self.mainLink)
-                element = self.driver.find_element_by_id('form1')
-                self.all_options = element.find_elements_by_tag_name("option")
-                for option in self.all_options:
-                    self.values[option.get_attribute("value")] = option
+
                 self.values[str(year)].click()
                 self.values[str(cadre)].click()
                 self.driver.find_element_by_id("btnSubmit").click()
@@ -38,6 +40,7 @@ class Analyzer():
                         self.newLinks = self.driver.find_elements_by_xpath("//a[@href]")
                     count += 1
         self.driver.quit()
+
     def parseLink(self):
         self.parser = BeautifulSoup(self.driver.page_source, "html5lib")
         'Gathering Basic info'
@@ -85,12 +88,11 @@ class Analyzer():
         officer.setTraining(training)
         self.officers.append(officer)
 
-
     def findElement(self, tag, atrKey, atrValue):
         return self.parser.find(str(tag), {str(atrKey): str(atrValue)})
 
 
-class EducationRow():
+class EducationRow:
     def __init__(self, qualification, discipline, spec1, spec2, year, division, institution, university, place):
         self.qualification = qualification
         self.discipline = discipline
@@ -107,6 +109,7 @@ class EducationRow():
         self.institution = institution
         self.university = university
         self.place = place
+
     def __str__(self):
         s = ""
         s += ("Qualification:" + str(self.qualification) + " ")
@@ -133,6 +136,7 @@ class PostingRow():
         self.experienceMinor = experienceMinor
         self.startDate = startDate
         self.endDate = endDate
+
     def __str__(self):
         s = ""
         s += ("Type:" + str(self.type) + " ")
@@ -147,8 +151,6 @@ class PostingRow():
         return s
 
 
-
-
 class TrainingRow():
     def __init__(self, courseName, courseTitle, place, startDate, endDate):
         self.courseName = courseName
@@ -156,6 +158,7 @@ class TrainingRow():
         self.place = place
         self.startDate = startDate
         self.endDate = endDate
+
     def __str__(self):
         s = ""
         s += ("Course Name:" + str(self.courseName) + " ")
@@ -199,25 +202,24 @@ class Officer():
 
     def __str__(self):
         s = ""
-        s += "Gender:" + str(self.gender) +"\n"
-        s+="Name:" + str(self.name)+"\n"
-        s +="Date of birth:"+ str(self.dob)+"\n"
-        s +="Cadre:"+str(self.cadre)+"\n"
-        s +="Batch:" + str(self.batch)+"\n"
-        s +="Id Number:" + str(self.idNumber)+"\n"
-        s +="Appointment Date:"+ str(self.dateOfAppointment)+"\n"
-        s +="Recruitment Source:"+ str(self.sourceOfRecruitment)+"\n"
-        s +="Education"+"\n"
-        for  educationRow in self.education:
-            s += str(educationRow)+"\n"
-        s += "Training"+"\n"
+        s += "Gender:" + str(self.gender) + "\n"
+        s += "Name:" + str(self.name) + "\n"
+        s += "Date of birth:" + str(self.dob) + "\n"
+        s += "Cadre:" + str(self.cadre) + "\n"
+        s += "Batch:" + str(self.batch) + "\n"
+        s += "Id Number:" + str(self.idNumber) + "\n"
+        s += "Appointment Date:" + str(self.dateOfAppointment) + "\n"
+        s += "Recruitment Source:" + str(self.sourceOfRecruitment) + "\n"
+        s += "Education" + "\n"
+        for educationRow in self.education:
+            s += str(educationRow) + "\n"
+        s += "Training" + "\n"
         for trainingRow in self.training:
-            s += str(trainingRow)+"\n"
-        s+="Postings"+"\n"
+            s += str(trainingRow) + "\n"
+        s += "Postings" + "\n"
         for postingsRow in self.postings:
-            s+= str(postingsRow)+"\n"
+            s += str(postingsRow) + "\n"
         return s
-
 
 
 years = [1988]
