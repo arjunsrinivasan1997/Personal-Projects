@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from openpyxl import load_workbook
 from selenium import webdriver
+import sys
 
 
 class Analyzer:
@@ -328,13 +329,15 @@ class Officer():
         sheet.cell(row=row, column=3).value = self.dob
         sheet.cell(row=row, column=4).value = self.sourceOfRecruitment
 
-
-years = [1988,1989,1990,1991]
-cadres = ['Kerala']
+if len(sys.argv) == 2:
+    filename = sys.argv[1] +'.xlsx'
+else :
+    filename = "Data.xlsx"
+years = open("Inputs/years.txt","r").read().split("\n")
+cadres = open("Inputs/cadres.txt","r").read().split("\n")
 analayze = Analyzer(years, cadres)
 analayze.analyze()
 dataWorkbook = load_workbook("Template.xlsx")
-filename = "test" + ".xlsx"
 dataWorkbook.save(filename)
 educationRow = 2
 trainingRow = 2
